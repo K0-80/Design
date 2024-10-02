@@ -16,7 +16,7 @@ const UnleashCreativitySection = () => {
           We need YOU!
         </motion.h2>
         <TypewriterText
-          text="We want to share with you practical experience across various design disciplines, allowing you to enhance your technical skills and along with your creativity through hands-on projects. We will create opportunities for you to present your projects, promoting a vibrant culture of creativity within IRHS, allowing them to showcase their creativity and build connections."
+          text="We want to share with you practical experience across various design disciplines, allowing you to enhance your technical skills and along with your creativity through hands-on projects. "
         />
       </div>
     </section>

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 const ContactForm = () => {
   const [name, setName] = useState('')
@@ -8,9 +8,26 @@ const ContactForm = () => {
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    grade: '',
+    message: '',
+  })
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setLoading(true)
     setIsSubmitting(true)
     setSubmitStatus('idle')
 
@@ -24,25 +41,30 @@ const ContactForm = () => {
         },
         body: JSON.stringify({
           content: `New contact form submission:
-Name: ${name || 'Anonymous'}
-Grade: ${grade}
-Message: ${message}`,
+Name: ${formData.name || 'Anonymous'}
+Grade: ${formData.grade}
+Message: ${formData.message}`,
         }),
       })
 
       if (response.ok) {
         setSubmitStatus('success')
-        setName('')
-        setGrade('')
-        setMessage('')
+        setFormData({
+          name: '',
+          grade: '',
+          message: '',
+        })
       } else {
         setSubmitStatus('error')
+        setError('An error occurred while submitting the form.')
       }
-    } catch (error) {
+    } catch (err) {
       setSubmitStatus('error')
+      setError('An error occurred while submitting the form.')
+    } finally {
+      setIsSubmitting(false)
+      setLoading(false)
     }
-
-    setIsSubmitting(false)
   }
 
   return (
@@ -52,8 +74,9 @@ Message: ${message}`,
         <input
           type="text"
           id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 bg-white bg-opacity-10 border border-gray-300 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
         />
       </div>
@@ -62,8 +85,9 @@ Message: ${message}`,
         <input
           type="text"
           id="grade"
-          value={grade}
-          onChange={(e) => setGrade(e.target.value)}
+          name="grade"
+          value={formData.grade}
+          onChange={handleChange}
           required
           className="mt-1 block w-full px-3 py-2 bg-white bg-opacity-10 border border-gray-300 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
         />
@@ -72,8 +96,9 @@ Message: ${message}`,
         <label htmlFor="message" className="block text-sm font-medium text-white">Message</label>
         <textarea
           id="message"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          name="message"
+          value={formData.message}
+          onChange={handleChange}
           required
           rows={4}
           className="mt-1 block w-full px-3 py-2 bg-white bg-opacity-10 border border-gray-300 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -82,17 +107,17 @@ Message: ${message}`,
       <div>
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={loading}
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
         >
-          {isSubmitting ? 'Sending...' : 'Send Message'}
+          {loading ? 'Sending...' : 'Send Message'}
         </button>
       </div>
       {submitStatus === 'success' && (
         <p className="text-green-400">Message sent successfully!</p>
       )}
       {submitStatus === 'error' && (
-        <p className="text-red-400">There was an error sending your message. Please try again.</p>
+        <p className="text-red-400">{error || 'There was an error sending your message. Please try again.'}</p>
       )}
     </form>
   )
